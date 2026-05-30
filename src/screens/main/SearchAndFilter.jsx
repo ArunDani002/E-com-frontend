@@ -43,14 +43,27 @@ const demoProducts = [
 export default function SearchAndFilter({ products, onFiltered }) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')
-  const [priceRange, setPriceRange] = useState([0, 10000])
+  const [priceRange, setPriceRange] = useState([0, 0]);
+
   const [minPrice, maxPrice] = useMemo(() => {
-    // derive reasonable slider bounds from products
-    const prices = products.map((p) => p.price)
-    const min = Math.min(...prices, 0)
-    const max = Math.max(...prices, 10000)
-    return [Math.floor(min), Math.ceil(max)]
-  }, [products])
+    if (!products || products.length === 0) {
+      return [0, 0];
+    }
+
+    const prices = products
+      .map(p => Number(p.productPrice))
+      .filter(p => !isNaN(p));
+
+    if (prices.length === 0) {
+      return [0, 0];
+    }
+
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+
+    return [Math.floor(min), Math.ceil(max)];
+  }, [products]);
+
   const [rating, setRating] = useState(0) // minimum rating
   const [sortBy, setSortBy] = useState('relevance')
   const [selectedCategories, setSelectedCategories] = useState([])
@@ -62,7 +75,7 @@ export default function SearchAndFilter({ products, onFiltered }) {
   }, [minPrice, maxPrice])
 
   const categories = useMemo(() => {
-    const set = new Set(products.map((p) => p.category))
+    const set = new Set(products.map((p) => p.productCategory))
     return ['All', ...Array.from(set)]
   }, [products])
 
@@ -71,43 +84,43 @@ export default function SearchAndFilter({ products, onFiltered }) {
     const q = query.trim().toLowerCase()
     let list = products.filter((p) => {
       // price range
-      if (p.price < priceRange[0] || p.price > priceRange[1]) return false
+      if (p.productPrice < priceRange[0] || p.productPrice > priceRange[1]) return false
       // rating
-      if (rating > 0 && p.rating < rating) return false
+      if (rating > 0 && p.productRating < rating) return false
       // category(s)
-      if (selectedCategories.length > 0 && !selectedCategories.includes(p.category)) return false
+      if (selectedCategories.length > 0 && !selectedCategories.includes(p.productCategory)) return false
       // single category fallback
-      if (category && category !== 'All' && selectedCategories.length === 0 && p.category !== category) return false
+      if (category && category !== 'All' && selectedCategories.length === 0 && p.productCategory !== category) return false
       // query match (name or description)
       if (!q) return true
       return (
-        p.name.toLowerCase().includes(q) ||
-        (p.description && p.description.toLowerCase().includes(q)) ||
-        (p.category && p.category.toLowerCase().includes(q))
+        p.productName.toLowerCase().includes(q) ||
+        (p.productDescription && p.productDescription.toLowerCase().includes(q)) ||
+        (p.productCategory && p.productCategory.toLowerCase().includes(q))
       )
     })
 
     // sorting
     switch (sortBy) {
       case 'price-asc':
-        list.sort((a, b) => a.price - b.price)
+        list.sort((a, b) => a.productPrice - b.productPrice)
         break
       case 'price-desc':
-        list.sort((a, b) => b.price - a.price)
+        list.sort((a, b) => b.productPrice - a.productPrice)
         break
       case 'rating-desc':
-        list.sort((a, b) => b.rating - a.rating)
+        list.sort((a, b) => b.productRating - a.productRating)
         break
       case 'name-asc':
-        list.sort((a, b) => a.name.localeCompare(b.name))
+        list.sort((a, b) => a.productName.localeCompare(b.productName))
         break
       default:
         // relevance: keep original order or simple heuristic
         list.sort((a, b) => {
           // bring items whose name starts with query higher
           if (q) {
-            const aStarts = a.name.toLowerCase().startsWith(q) ? -1 : 0
-            const bStarts = b.name.toLowerCase().startsWith(q) ? 1 : 0
+            const aStarts = a.productName.toLowerCase().startsWith(q) ? -1 : 0
+            const bStarts = b.productName.toLowerCase().startsWith(q) ? 1 : 0
             return aStarts + bStarts
           }
           return 0
@@ -146,7 +159,7 @@ export default function SearchAndFilter({ products, onFiltered }) {
   return (
     <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
       <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <TextField
             fullWidth
             placeholder="Search products, categories..."
@@ -172,7 +185,7 @@ export default function SearchAndFilter({ products, onFiltered }) {
           />
         </Grid>
 
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }} >
           <FormControl fullWidth size="small">
             <InputLabel>Category</InputLabel>
             <Select label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -185,7 +198,7 @@ export default function SearchAndFilter({ products, onFiltered }) {
           </FormControl>
         </Grid>
 
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <FormControl fullWidth size="small">
             <InputLabel>Sort</InputLabel>
             <Select label="Sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
@@ -198,7 +211,7 @@ export default function SearchAndFilter({ products, onFiltered }) {
           </FormControl>
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="body2">Min Rating:</Typography>
             <Select
@@ -248,7 +261,7 @@ export default function SearchAndFilter({ products, onFiltered }) {
           </Stack>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Box sx={{ px: 1 }}>
             <Typography variant="caption">Price range (₹)</Typography>
             <Slider
@@ -266,7 +279,7 @@ export default function SearchAndFilter({ products, onFiltered }) {
           </Box>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: { xs: 1, md: 0 } }}>
             {selectedCategories.length > 0 ? (
               selectedCategories.map((c) => (
@@ -280,7 +293,7 @@ export default function SearchAndFilter({ products, onFiltered }) {
           </Stack>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Typography variant="body2">Results: {filtered.length}</Typography>
         </Grid>
       </Grid>

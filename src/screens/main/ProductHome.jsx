@@ -1,8 +1,9 @@
 import { Box, Grid, Card, CardContent, CardMedia, Typography, Rating } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import HeaderNavbar from '../NavBars/HeaderNavbar'
 import SearchAndFilter from './SearchAndFilter'
 import { ProductDetail } from './ProductDetail'
+import axios from 'axios'
 
 // renamed to avoid shadowing with state variable
 const initialProducts = [
@@ -53,9 +54,12 @@ const initialProducts = [
     }
 ]
 
+
+
+
 export default function ProductHome() {
     // initialize from the real product list
-    const [products] = useState(initialProducts)
+    const [products, setProducts] = useState(initialProducts)
     const [filteredProducts, setFilteredProducts] = useState(initialProducts)
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [detailOpen, setDetailOpen] = useState(false)
@@ -65,6 +69,27 @@ export default function ProductHome() {
         setDetailOpen(true)
     }
 
+    useEffect(() => {
+        getAllProducts();
+    }, [])
+
+    const getAllProducts = () => {
+        try {
+            axios.get('http://localhost:8080/api/products')
+                .then((res) => {
+                    // console.log(res.data)
+                    setProducts(res.data)
+                    setFilteredProducts(res.data)
+                }).catch((err) => {
+                    console.log(err)
+                })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+
     const closeDetail = () => {
         setDetailOpen(false)
         // optionally: setSelectedProduct(null)
@@ -72,20 +97,18 @@ export default function ProductHome() {
 
     const handleAddToCart = (product, qty = 1) => {
         // TODO: wire this to your cart (context / redux / API)
-        console.log('Add to cart', product, qty)
+        // console.log('Add to cart', product, qty)
         setDetailOpen(false)
     }
 
     const handleBuyNow = (product) => {
         // TODO: start checkout flow
-        console.log('Buy now', product)
+        // console.log('Buy now', product)
         setDetailOpen(false)
     }
 
     return (
         <React.Fragment>
-            <HeaderNavbar />
-
             <Box sx={{ p: 2 }}>
                 {/* pass the real products and get filtered results via setter */}
                 <SearchAndFilter products={products} onFiltered={setFilteredProducts} />
@@ -93,28 +116,34 @@ export default function ProductHome() {
                 <Box sx={{ padding: 4 }}>
                     <Grid container spacing={3}>
                         {filteredProducts.map((item) => (
-                            <Grid item xs={12} sm={6} md={4} key={item.id}>
+                            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={item.id}>
                                 <Card
                                     sx={{ borderRadius: 3, boxShadow: 3, cursor: 'pointer' }}
                                     onClick={() => openDetail(item)}
                                 >
-                                    <CardMedia component="img" height="180" image={item.image} alt={item.name} />
+                                    {/* <CardMedia component="img" height="180" image={item.image} alt={item.name} /> */}
+                                    <CardMedia
+                                        component="img"
+                                        height="180"
+                                        image={item.productImageUrl}
+                                        alt={item.productName}
+                                    />
                                     <CardContent>
                                         <Typography variant="h6" fontWeight="bold">
-                                            {item.name}
+                                            {item.productName}
                                         </Typography>
 
                                         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                            {item.description}
+                                            {item.productDescription}
                                         </Typography>
 
-                                        <Rating name="read-only" value={item.rating} precision={0.5} readOnly sx={{ mt: 1 }} />
+                                        <Rating name="read-only" value={item.productRating} precision={0.5} readOnly sx={{ mt: 1 }} />
 
-                                        <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
-                                            ₹{item.price}
+                                        <Typography variant="h6" sx={{ mt: 1 }}>
+                                            ₹{item.productPrice}
                                         </Typography>
                                     </CardContent>
-                                </Card>
+                                </Card> 
                             </Grid>
                         ))}
                     </Grid>
