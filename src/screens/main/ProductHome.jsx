@@ -95,9 +95,26 @@ export default function ProductHome() {
         // optionally: setSelectedProduct(null)
     }
 
-    const handleAddToCart = (product, qty = 1) => {
-        // TODO: wire this to your cart (context / redux / API)
-        // console.log('Add to cart', product, qty)
+    const handleAddToCart = async (product, qty = 1) => {
+        console.log(product, 'product')
+        try {
+            await axios.post("http://localhost:8080/api/cart", {
+                product: {
+                    id: product.id
+                },
+                quantity: qty
+            },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                }
+
+            );
+            alert('Added to cart!')
+        } catch (error) {
+            alert('Failed to add to cart.')
+        }
         setDetailOpen(false)
     }
 
@@ -143,7 +160,7 @@ export default function ProductHome() {
                                             ₹{item.productPrice}
                                         </Typography>
                                     </CardContent>
-                                </Card> 
+                                </Card>
                             </Grid>
                         ))}
                     </Grid>

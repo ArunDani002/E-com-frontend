@@ -40,8 +40,12 @@ The ProductHome demonstrates how to open the detail dialog when clicking a card.
 export function ProductDetail({ open, product, onClose, onAddToCart, onBuyNow }) {
   if (!product) return null
 
-  const handleAddToCart = () => {
-    if (onAddToCart) onAddToCart(product, 1)
+  const handleAddToCart = async() => {
+    try {
+      await onAddToCart(product, 1) // example with qty 1
+    } catch (error) {
+      alert('Failed to add to cart.')
+    }
   }
 
   const handleBuyNow = () => {

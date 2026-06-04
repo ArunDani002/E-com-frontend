@@ -9,16 +9,18 @@ const categories = ['Audio', 'Wearables', 'Cameras', 'Peripherals', 'Accessories
 
 export default function SellProductForm() {
   const navigate = useNavigate()
-//   const { addProduct } = useProducts()
   const [form, setForm] = useState({
     productName: '',
     productPrice: '',
     rating: '',
     productCategory: '',
     productDescription: '',
-    productImageUrl: ''
+    productImageUrl: '',
+    stocks:''
   })
   const [saving, setSaving] = useState(false)
+
+  const uuid = localStorage.getItem("uid");
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
@@ -36,7 +38,7 @@ export default function SellProductForm() {
     }
 
     try {
-      axios.post('http://localhost:8080/api/products',form)
+      axios.post(`http://localhost:8080/api/products/${uuid}`,form)
       .then((res)=>{
         console.log(res)
       }).catch((err)=>{
@@ -79,6 +81,17 @@ export default function SellProductForm() {
             name="productPrice"
             type="number"
             value={form.productPrice}
+            onChange={handleChange}
+            fullWidth
+            required
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            label="Stocks"
+            name="stocks"
+            type="number"
+            value={form.stocks}
             onChange={handleChange}
             fullWidth
             required
