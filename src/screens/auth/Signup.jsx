@@ -1,26 +1,52 @@
 import { Box, Button, Card, Input, Typography } from '@mui/material'
+import axios from 'axios';
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Signup = () => {
 
     const navigate = useNavigate();
     const [userData, setUserData] = useState({
-        name: "",
+        address: "",
+        city: "",
+        country: "",
         email: "",
+        firstName: "",
+        lastName: "",
         password: "",
-        confirmPassword: "",
-        dob: "",
+        phone: "",
+        state: ""
     })
 
     const submit = () => {
-        console.log("User Data: ", userData);
+        if (userData.firstName === "" || userData.lastName === "" || userData.email === "" || userData.password === "" || userData.confirmPassword === "" || userData.dob === "") {
+            toast.warning("All fields are required");
+            return;
+        }
+
+        try {
+            axios.post("http://localhost:8080/api/users", userData)
+                .then(res => {
+                    toast.success("Registration Successful");
+                    navigate("/login");
+                });
+        } catch (error) {
+            console.error("Registration Failed: ", error);
+            toast.error("Registration Failed");
+        }
+
         setUserData({
-            name: "",
+            address: "",
+            city: "",
+            country: "",
             email: "",
+            firstName: "",
+            lastName: "",
             password: "",
-            confirmPassword: "",
-            dob: "",
+            confirmPassword:"",
+            phone: "",
+            state: ""
         })
     }
 
@@ -46,15 +72,32 @@ const Signup = () => {
                     flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    height: '300px',
                 }}>
                     <Typography>Sign Up</Typography>
                     <Box>
                         <Box>
-                            <Input placeholder='Name' name='name' value={userData.name} onChange={handleChange} />
+                            <Input placeholder='First Name' name='firstName' value={userData.firstName} onChange={handleChange} />
+                        </Box>
+                        <Box>
+                            <Input placeholder='Last Name' name='lastName' value={userData.lastName} onChange={handleChange} />
+                        </Box>
+                        <Box>
+                            <Input placeholder='address' name='address' value={userData.address} onChange={handleChange} />
+                        </Box>
+                        <Box>
+                            <Input placeholder='city' name='city' value={userData.city} onChange={handleChange} />
+                        </Box>
+                        <Box>
+                            <Input placeholder='country' name='country' value={userData.country} onChange={handleChange} />
                         </Box>
                         <Box>
                             <Input placeholder='Email Id' name='email' value={userData.email} onChange={handleChange} />
+                        </Box>
+                        <Box>
+                            <Input placeholder='phone' name='phone' value={userData.phone} onChange={handleChange} />
+                        </Box>
+                        <Box>
+                            <Input placeholder='state' name='state' value={userData.state} onChange={handleChange} />
                         </Box>
                         <Box>
                             <Input placeholder='Password' name='password' value={userData.password} onChange={handleChange} />
@@ -62,16 +105,14 @@ const Signup = () => {
                         <Box>
                             <Input placeholder='Confirm Password' name='confirmPassword' value={userData.confirmPassword} onChange={handleChange} />
                         </Box>
-                        <Box>
-                            <Input placeholder='Date of Birth' name='dob' type='date' value={userData.dob} onChange={handleChange} />
-                        </Box>
+
                     </Box>
                     <Button variant='contained' sx={{ marginTop: '20px' }} onClick={() => { submit() }}>
                         Register
                     </Button>
 
                     <Box>
-                        Have Account Already? <Button onClick={() => navigate("/")}>Signin</Button>
+                        Have Account Already? <Button onClick={() => navigate("/login")}>Signin</Button>
                     </Box>
                 </Card>
             </Box>

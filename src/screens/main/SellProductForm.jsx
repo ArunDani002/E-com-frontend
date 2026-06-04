@@ -2,22 +2,25 @@
 import React, { useState } from 'react'
 import { Box, TextField, Button, MenuItem, Typography, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 // import { useProducts } from './ProductContext'
 
 const categories = ['Audio', 'Wearables', 'Cameras', 'Peripherals', 'Accessories', 'Garments', 'Other']
 
 export default function SellProductForm() {
   const navigate = useNavigate()
-//   const { addProduct } = useProducts()
   const [form, setForm] = useState({
-    name: '',
-    price: '',
+    productName: '',
+    productPrice: '',
     rating: '',
-    category: '',
-    description: '',
-    image: ''
+    productCategory: '',
+    productDescription: '',
+    productImageUrl: '',
+    stocks:''
   })
   const [saving, setSaving] = useState(false)
+
+  const uuid = localStorage.getItem("uid");
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
@@ -28,15 +31,27 @@ export default function SellProductForm() {
     setSaving(true)
 
     // simple validation
-    if (!form.name || !form.price) {
+    if (!form.productName || !form.productPrice) {
       alert('Please provide product name and price.')
       setSaving(false)
       return
     }
 
+    try {
+      axios.post(`http://localhost:8080/api/products/${uuid}`,form)
+      .then((res)=>{
+        console.log(res)
+      }).catch((err)=>{
+        console.log(err)
+      })
+    } catch (error) {
+      
+    }
+
     // create product in context
     // addProduct(form)
     console.log(form)
+
 
     // optional: show a toast here
     setSaving(false)
@@ -53,8 +68,8 @@ export default function SellProductForm() {
         <form onSubmit={handleSubmit}>
           <TextField
             label="Product Name"
-            name="name"
-            value={form.name}
+            name="productName"
+            value={form.productName}
             onChange={handleChange}
             fullWidth
             required
@@ -63,9 +78,20 @@ export default function SellProductForm() {
 
           <TextField
             label="Price (₹)"
-            name="price"
+            name="productPrice"
             type="number"
-            value={form.price}
+            value={form.productPrice}
+            onChange={handleChange}
+            fullWidth
+            required
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            label="Stocks"
+            name="stocks"
+            type="number"
+            value={form.stocks}
             onChange={handleChange}
             fullWidth
             required
@@ -86,8 +112,8 @@ export default function SellProductForm() {
           <TextField
             select
             label="Category"
-            name="category"
-            value={form.category}
+            name="productCategory"
+            value={form.productCategory}
             onChange={handleChange}
             fullWidth
             sx={{ mb: 2 }}
@@ -101,8 +127,8 @@ export default function SellProductForm() {
 
           <TextField
             label="Image URL"
-            name="image"
-            value={form.image}
+            name="productImageUrl"
+            value={form.productImageUrl}
             onChange={handleChange}
             fullWidth
             sx={{ mb: 2 }}
@@ -110,8 +136,8 @@ export default function SellProductForm() {
 
           <TextField
             label="Short Description"
-            name="description"
-            value={form.description}
+            name="productDescription"
+            value={form.productDescription}
             onChange={handleChange}
             fullWidth
             multiline

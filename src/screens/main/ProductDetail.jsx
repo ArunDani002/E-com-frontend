@@ -40,8 +40,12 @@ The ProductHome demonstrates how to open the detail dialog when clicking a card.
 export function ProductDetail({ open, product, onClose, onAddToCart, onBuyNow }) {
   if (!product) return null
 
-  const handleAddToCart = () => {
-    if (onAddToCart) onAddToCart(product, 1)
+  const handleAddToCart = async() => {
+    try {
+      await onAddToCart(product, 1) // example with qty 1
+    } catch (error) {
+      alert('Failed to add to cart.')
+    }
   }
 
   const handleBuyNow = () => {
@@ -51,7 +55,7 @@ export function ProductDetail({ open, product, onClose, onAddToCart, onBuyNow })
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6">{product.name}</Typography>
+        <Typography variant="h6">{product.productName}</Typography>
         <IconButton onClick={onClose}>
           <CloseIcon />
         </IconButton>
@@ -60,25 +64,25 @@ export function ProductDetail({ open, product, onClose, onAddToCart, onBuyNow })
       <DialogContent dividers>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={5}>
-            <CardMedia component="img" image={product.image} alt={product.name} sx={{ borderRadius: 1 }} />
+            <CardMedia component="img" height="250" image={product.productImageUrl} alt={product.productImageUrl} sx={{ borderRadius: 1 }} />
           </Grid>
 
           <Grid item xs={12} sm={7}>
             <Typography variant="subtitle1" color="text.secondary">
-              {product.category}
+              {product.productCategory}
             </Typography>
 
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
-              <Rating value={product.rating} precision={0.5} readOnly />
-              <Typography variant="body2">{product.rating}</Typography>
+              <Rating value={product.productRating} precision={0.5} readOnly />
+              <Typography variant="body2">{product.productRating}</Typography>
             </Stack>
 
             <Typography variant="h5" sx={{ mt: 2 }}>
-              ₹{product.price}
+              ₹{product.productPrice}
             </Typography>
 
             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              {product.description}
+              {product.productDescription}
             </Typography>
 
             {/* Example small meta or features list could go here */}

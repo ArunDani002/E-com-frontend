@@ -1,11 +1,23 @@
 import { Box, Button, Card, Input } from '@mui/material'
-import React, { useState } from 'react'
+import axios from 'axios';
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify';
 
 const Signin = () => {
+
+
+    useEffect(() => {
+        // fetch real products from API if needed
+        const token = localStorage.getItem("token");
+        if (token) {
+            navigate("/productlisting");
+        }
+    })
+
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        email: '',
+        username: '',
         password: '',
     })
 
@@ -17,12 +29,36 @@ const Signin = () => {
     }
 
     const submit = () => {
-        console.log("Form Data: ", formData);
-        if (formData.email && formData.password) {
-            navigate("/productlisting");
+        if (formData.username == "" || formData.password == "") {
+            toast.warning("All fields are required");
         }
+
+        try {
+            axios.post("http://localhost:8080/api/auth/login", formData)
+                .then(res => {
+                    console.log("Login Successful: ", res.data);
+                    if (res?.data?.success === true) {
+                        toast.success("Login Successful");
+                        console.log("Login Successful: ", res);
+                        localStorage.setItem("token", res.data.token);
+                        localStorage.setItem("role", res.data.role);
+                        localStorage.setItem("uid", res.data.uuid);
+                        localStorage.setItem("userName", res.data.firstName);
+                        // console.log("Login Successful: ", res.data);
+
+                        // localStorage.setItem("user", JSON.stringify(res.data.user));
+                        navigate("/");
+                    }
+                }).catch(err => {
+                    toast.error(err.response?.data?.message);
+                })
+
+        } catch (error) {
+            console.log("Login Failed: ", error);
+        }
+
         setFormData({
-            email: '',
+            username: '',
             password: '',
         })
     }
@@ -45,7 +81,7 @@ const Signin = () => {
                 }}>
                     <Box textAlign="center" sx={{ margin: '10px', bgcolor: 'yellow' }}>Sign in</Box>
                     <Box>
-                        <Input placeholder='Email Id' name='email' value={formData.email} onChange={handleChange} />
+                        <Input placeholder='Username' name='username' value={formData.username} onChange={handleChange} />
                     </Box>
                     <Box>
                         <Input placeholder='Password' name='password' value={formData.password} onChange={handleChange} />
