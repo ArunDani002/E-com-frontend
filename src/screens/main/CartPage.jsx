@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -13,24 +13,32 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import axios from "axios";
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Wireless Headphones",
-      price: 1200,
-      quantity: 1,
-      image: "",
-    },
-    {
-      id: 2,
-      name: "Smart Watch",
-      price: 2500,
-      quantity: 2,
-      image: "",
-    },
-  ]);
+  const [cartItems, setCartItems] = useState([]);
+
+
+  const getCartItems = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8080/api/cart",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
+
+      setCartItems(res.data);
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+    }
+  };
+
+  useEffect(() => {
+    getCartItems();
+  }, [])
 
   const increaseQty = (id) => {
     setCartItems((prev) =>
@@ -50,14 +58,28 @@ const CartPage = () => {
     );
   };
 
-  const removeItem = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  const removeItem = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8080/api/cart/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+
+      await getCartItems();
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+    }
   };
 
-  const totalAmount = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+  console.log(cartItems, 'cart items')
+
+  const totalAmount = cartItems?.reduce(
+    (total, item) => total + item?.product?.productPrice * item.quantity,
     0
   );
+
+  console.log(totalAmount, 'total amount')
 
   return (
     <Box sx={{ p: 3, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
@@ -66,42 +88,43 @@ const CartPage = () => {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          {cartItems.length === 0 ? (
+        <Grid  >
+          {cartItems?.length === 0 ? (
             <Card>
               <CardContent>
                 <Typography>Your cart is empty.</Typography>
               </CardContent>
             </Card>
           ) : (
-            cartItems.map((item) => (
+            cartItems?.map((item) => (
               <Card key={item.id} sx={{ mb: 2, borderRadius: 3 }}>
+                {/* {console.log(item,'item in cart')} */}
                 <CardContent>
                   <Grid container alignItems="center" spacing={2}>
-                    <Grid item xs={12} sm={2}>
+                    <Grid >
                       <Avatar
                         variant="rounded"
-                        src={item.image}
+                        src={item.product?.productImageUrl}
                         sx={{ width: 90, height: 90 }}
                       >
-                        {item.name.charAt(0)}
+                        {item.product?.productName?.charAt(0)}
                       </Avatar>
                     </Grid>
 
-                    <Grid item xs={12} sm={4}>
-                      <Typography fontWeight="bold">{item.name}</Typography>
+                    <Grid >
+                      <Typography fontWeight="bold">{item.product?.productName}</Typography>
                       <Typography color="text.secondary">
-                        ₹{item.price}
+                        ₹{item.product?.productPrice}
                       </Typography>
                     </Grid>
 
-                    <Grid item xs={12} sm={3}>
+                    <Grid >
                       <Box display="flex" alignItems="center" gap={1}>
                         <IconButton onClick={() => decreaseQty(item.id)}>
                           <RemoveIcon />
                         </IconButton>
 
-                        <Typography>{item.quantity}</Typography>
+                        <Typography>{item?.quantity}</Typography>
 
                         <IconButton onClick={() => increaseQty(item.id)}>
                           <AddIcon />
@@ -109,13 +132,13 @@ const CartPage = () => {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12} sm={2}>
+                    <Grid  >
                       <Typography fontWeight="bold">
-                        ₹{item.price * item.quantity}
+                        ₹{item?.product?.productPrice * item.quantity}
                       </Typography>
                     </Grid>
 
-                    <Grid item xs={12} sm={1}>
+                    <Grid  >
                       <IconButton color="error" onClick={() => removeItem(item.id)}>
                         <DeleteIcon />
                       </IconButton>
@@ -127,7 +150,7 @@ const CartPage = () => {
           )}
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid >
           <Card sx={{ borderRadius: 3 }}>
             <CardContent>
               <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -136,7 +159,7 @@ const CartPage = () => {
 
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography>Items</Typography>
-                <Typography>{cartItems.length}</Typography>
+                <Typography>{cartItems?.length}</Typography>
               </Box>
 
               <Box display="flex" justifyContent="space-between" mb={1}>
@@ -156,7 +179,7 @@ const CartPage = () => {
                 <Typography fontWeight="bold">₹{totalAmount}</Typography>
               </Box>
 
-              <Button variant="contained" fullWidth disabled={cartItems.length === 0}>
+              <Button variant="contained" fullWidth disabled={cartItems?.length === 0}>
                 Proceed to Checkout
               </Button>
             </CardContent>

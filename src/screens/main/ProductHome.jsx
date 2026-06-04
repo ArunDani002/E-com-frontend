@@ -96,27 +96,28 @@ export default function ProductHome() {
     }
 
     const handleAddToCart = async (product, qty = 1) => {
-        console.log(product, 'product')
         try {
-            await axios.post("http://localhost:8080/api/cart", {
-                product: {
-                    id: product.id
+            await axios.post(
+                "http://localhost:8080/api/cart",
+                {
+                    productId: product.id,
+                    quantity: qty
                 },
-                quantity: qty
-            },
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
                     }
                 }
-
             );
-            alert('Added to cart!')
+
+            alert("Added to cart!");
         } catch (error) {
-            alert('Failed to add to cart.')
+            console.log(error);
+            alert("Failed to add to cart.");
         }
-        setDetailOpen(false)
-    }
+
+        setDetailOpen(false);
+    };
 
     const handleBuyNow = (product) => {
         // TODO: start checkout flow
