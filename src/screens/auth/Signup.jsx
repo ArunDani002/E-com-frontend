@@ -3,6 +3,7 @@ import axios from 'axios';
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { API } from '../../Api';
 
 const Signup = () => {
 
@@ -26,7 +27,7 @@ const Signup = () => {
         }
 
         try {
-            axios.post("http://localhost:8080/api/users", userData)
+            axios.post(API + "/api/users", userData)
                 .then(res => {
                     toast.success("Registration Successful");
                     navigate("/login");

@@ -3,6 +3,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify';
+import { API } from '../../Api';
 
 const Signin = () => {
 
@@ -34,7 +35,7 @@ const Signin = () => {
         }
 
         try {
-            axios.post("http://localhost:8080/api/auth/login", formData)
+            axios.post(API + "/api/auth/login", formData)
                 .then(res => {
                     console.log("Login Successful: ", res.data);
                     if (res?.data?.success === true) {

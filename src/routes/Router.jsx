@@ -7,6 +7,7 @@ import Signin from "../screens/auth/Signin";
 import ProductHome from "../screens/main/ProductHome";
 import MyProductListing from "../screens/main/MyProductListing";
 import SellProductForm from "../screens/main/SellProductForm";
+import AdminPage from "../screens/main/AdminPage";
 
 import ProfilePage from "../screens/profile/ProfilePage";
 
@@ -62,6 +63,14 @@ const Router = () => {
                 <CartPage />
               </ProtectedRoute>
             } />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         <Route path="/productlisting" element={<Navigate to="/" />} />

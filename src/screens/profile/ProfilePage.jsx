@@ -11,6 +11,7 @@ import {
   Divider,
 } from "@mui/material";
 import axios from "axios";
+import { API } from "../../Api";
 
 const ProfilePage = () => {
 
@@ -35,7 +36,7 @@ const ProfilePage = () => {
 
   const getProfile = (userID) => {
     try {
-      axios.get(`http://localhost:8080/api/users/${userID}`)
+      axios.get(API + `/api/users/${userID}`)
         .then((res) => {
           console.log("User Profile: ", res.data);
           setUser(res.data);

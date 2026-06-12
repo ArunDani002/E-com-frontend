@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { Box, TextField, Button, MenuItem, Typography, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { API } from '../../Api'
 // import { useProducts } from './ProductContext'
 
 const categories = ['Audio', 'Wearables', 'Cameras', 'Peripherals', 'Accessories', 'Garments', 'Other']
@@ -38,7 +39,7 @@ export default function SellProductForm() {
     }
 
     try {
-      axios.post(`http://localhost:8080/api/products/${uuid}`,form)
+      axios.post(API + `/api/products/${uuid}`,form)
       .then((res)=>{
         console.log(res)
       }).catch((err)=>{

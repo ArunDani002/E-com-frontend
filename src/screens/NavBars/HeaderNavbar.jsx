@@ -24,15 +24,16 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import PersonIcon from '@mui/icons-material/Person'
 import ListAltIcon from '@mui/icons-material/ListAlt'
 import AddBoxIcon from '@mui/icons-material/AddBox'
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import ModelReusable from '../reusable/ModelReusable'
 
 const HeaderNavbar = ({
   // user = { name: 'A', avatarUrl: null },
-  onProfile,
-  onSettings,
+  onProfile = () => {},
+  onSettings = () => {},
   onLogout,
-  onOrders,
-  onCart,
+  onOrders = () => {},
+  onCart = () => {},
   notificationsCount = 0
 }) => {
   const navigate = useNavigate()
@@ -58,13 +59,15 @@ const HeaderNavbar = ({
   const userName = localStorage.getItem('userName')
 
   const Logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    navigate("/");
+    handleProfileClose()
+    handleMobileClose()
+    localStorage.removeItem("token")
+    localStorage.removeItem("role")
+    navigate("/")
   }
 
   const Login = () => {
-    navigate("/login");
+    navigate("/login")
   }
 
   const LoginSettings = () => {
@@ -82,20 +85,28 @@ const HeaderNavbar = ({
   const handleMenuAction = (action) => {
     switch (action) {
       case 'profile':
-        navigate('/profile');
-        break;
+        navigate('/profile')
+        handleProfileClose()
+        break
       case 'settings':
-        onSettings();
-        break;
+        onSettings()
+        handleProfileClose()
+        break
       case 'logout':
-        onLogout();
-        break;
+        if (onLogout) {
+          onLogout()
+        } else {
+          Logout()
+        }
+        break
       case 'orders':
-        onOrders();
-        break;
+        onOrders()
+        handleProfileClose()
+        break
       case 'cart':
-        navigate('/cart');
-        break;
+        navigate('/cart')
+        handleProfileClose()
+        break
     }
   }
 
@@ -173,27 +184,39 @@ const HeaderNavbar = ({
               </IconButton>
             </Tooltip>
 
-            {token ?
-              <Tooltip title="Account">
-                <IconButton
-                  size="large"
-                  edge="end"
-                  aria-label="account"
-                  aria-controls={open ? 'profile-menu' : undefined}
-                  aria-haspopup="true"
-                  onClick={handleProfileClick}
-                  sx={{ ml: 1 }}
-                >
-                  {/* <Avatar src={user.avatarUrl} sx={{ bgcolor: '#fff', color: '#1976d2', width: 40, height: 40 }}>
-                    {!user.avatarUrl && avatarContent}
-                  </Avatar> */}
-                  <Avatar>
-                    {userName?.charAt(0)}
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
+            {token ? (
+              <>
+                {role === 'ADMIN' && (
+                  <Button
+                    variant="contained"
+                    startIcon={<AdminPanelSettingsIcon />}
+                    onClick={() => navigate('/admin')}
+                    sx={{ mr: 1, display: { xs: 'none', sm: 'inline-flex' } }}
+                    size="small"
+                  >
+                    Admin
+                  </Button>
+                )}
 
-              : (<Button sx={{ color: '#fff', fontSize: 14 }} onClick={() => LoginSettings()}>login</Button>)}
+                <Tooltip title="Account">
+                  <IconButton
+                    size="large"
+                    edge="end"
+                    aria-label="account"
+                    aria-controls={open ? 'profile-menu' : undefined}
+                    aria-haspopup="true"
+                    onClick={handleProfileClick}
+                    sx={{ ml: 1 }}
+                  >
+                    <Avatar>
+                      {userName?.charAt(0)}
+                    </Avatar>
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
+              <Button sx={{ color: '#fff', fontSize: 14 }} onClick={() => LoginSettings()}>login</Button>
+            )}
 
             <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
               <IconButton size="large" onClick={handleMobileOpen} sx={{ color: '#fff' }}>

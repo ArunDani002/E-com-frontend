@@ -1,9 +1,12 @@
-import { Box, Grid, Card, CardContent, CardMedia, Typography, Rating } from '@mui/material'
+import { Box, Grid, Card, CardContent, CardMedia, Typography, Rating, Button } from '@mui/material'
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import HeaderNavbar from '../NavBars/HeaderNavbar'
 import SearchAndFilter from './SearchAndFilter'
 import { ProductDetail } from './ProductDetail'
+import ModelReusable from '../reusable/ModelReusable'
 import axios from 'axios'
+import { API } from '../../Api'
 
 // renamed to avoid shadowing with state variable
 const initialProducts = [
@@ -63,6 +66,9 @@ export default function ProductHome() {
     const [filteredProducts, setFilteredProducts] = useState(initialProducts)
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [detailOpen, setDetailOpen] = useState(false)
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+
+    const navigate = useNavigate()
 
     const openDetail = (product) => {
         setSelectedProduct(product)
@@ -75,7 +81,7 @@ export default function ProductHome() {
 
     const getAllProducts = () => {
         try {
-            axios.get('http://localhost:8080/api/products')
+            axios.get(API + '/api/products')
                 .then((res) => {
                     // console.log(res.data)
                     setProducts(res.data)
@@ -98,7 +104,7 @@ export default function ProductHome() {
     const handleAddToCart = async (product, qty = 1) => {
         try {
             await axios.post(
-                "http://localhost:8080/api/cart",
+                API + "/api/cart",
                 {
                     productId: product.id,
                     quantity: qty
@@ -120,8 +126,14 @@ export default function ProductHome() {
     };
 
     const handleBuyNow = (product) => {
+        const token = localStorage.getItem('token')
+
+        if (!token) {
+            setShowLoginPrompt(true)
+            return
+        }
+
         // TODO: start checkout flow
-        // console.log('Buy now', product)
         setDetailOpen(false)
     }
 
@@ -175,6 +187,30 @@ export default function ProductHome() {
                 onAddToCart={handleAddToCart}
                 onBuyNow={handleBuyNow}
             />
+
+            <ModelReusable
+                open={showLoginPrompt}
+                onClose={() => setShowLoginPrompt(false)}
+                title="Login Required"
+            >
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                        You need to be logged in to buy a product. Please login to continue.
+                    </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                    <Button onClick={() => setShowLoginPrompt(false)}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            setShowLoginPrompt(false)
+                            navigate('/login')
+                        }}
+                    >
+                        Login
+                    </Button>
+                </Box>
+            </ModelReusable>
         </React.Fragment>
     )
 }

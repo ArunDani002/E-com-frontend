@@ -14,6 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import axios from "axios";
+import { API } from "../../Api";
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -22,7 +23,7 @@ const CartPage = () => {
   const getCartItems = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/cart",
+        API + "/api/cart",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -60,7 +61,7 @@ const CartPage = () => {
 
   const removeItem = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/api/cart/${id}`, {
+      await axios.delete(API + `/api/cart/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
