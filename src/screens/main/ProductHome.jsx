@@ -1,4 +1,4 @@
-import { Box, Grid, Card, CardContent, CardMedia, Typography, Rating, Button } from '@mui/material'
+import { Box, Grid, Card, CardContent, CardMedia, Typography, Rating, Button, CircularProgress } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HeaderNavbar from '../NavBars/HeaderNavbar'
@@ -8,62 +8,13 @@ import ModelReusable from '../reusable/ModelReusable'
 import axios from 'axios'
 import { API } from '../../Api'
 
-// renamed to avoid shadowing with state variable
-const initialProducts = [
-    {
-        id: 1,
-        name: "Wireless Headphones",
-        price: 2999,
-        rating: 4.5,
-        description: "High-quality wireless sound with noise cancellation.",
-        image: "https://via.placeholder.com/300x200",
-        category: "Audio"
-    },
-    {
-        id: 2,
-        name: "Smart Watch",
-        price: 4999,
-        rating: 4.0,
-        description: "Track your fitness and stay connected on the go.",
-        image: "https://via.placeholder.com/300x200",
-        category: "Wearables"
-    },
-    {
-        id: 3,
-        name: "Bluetooth Speaker",
-        price: 1999,
-        rating: 4.2,
-        description: "Portable speaker with deep bass and long battery life.",
-        image: "https://via.placeholder.com/300x200",
-        category: "Audio"
-    },
-    {
-        id: 4,
-        name: "Smart Watch",
-        price: 4999,
-        rating: 4.0,
-        description: "Track your fitness and stay connected on the go.",
-        image: "https://via.placeholder.com/300x200",
-        category: "Wearables"
-    },
-    {
-        id: 5,
-        name: "Bluetooth Speaker",
-        price: 1999,
-        rating: 4.2,
-        description: "Portable speaker with deep bass and long battery life.",
-        image: "https://via.placeholder.com/300x200",
-        category: "Audio"
-    }
-]
-
-
-
 
 export default function ProductHome() {
     // initialize from the real product list
-    const [products, setProducts] = useState(initialProducts)
-    const [filteredProducts, setFilteredProducts] = useState(initialProducts)
+    const [products, setProducts] = useState([])
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true)
+    const [filteredProducts, setFilteredProducts] = useState([])
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [detailOpen, setDetailOpen] = useState(false)
     const [showLoginPrompt, setShowLoginPrompt] = useState(false)
@@ -79,20 +30,25 @@ export default function ProductHome() {
         getAllProducts();
     }, [])
 
-    const getAllProducts = () => {
+    const getAllProducts = async () => {
         try {
-            axios.get(API + '/api/products')
-                .then((res) => {
-                    // console.log(res.data)
-                    setProducts(res.data)
-                    setFilteredProducts(res.data)
-                }).catch((err) => {
-                    console.log(err)
-                })
-        } catch (error) {
-            console.log(error)
+            setLoading(true);
+            setError(null);
+
+            const res = await axios.get(API + "/api/products");
+
+            setProducts(res.data);
+            setFilteredProducts(res.data);
+        } catch (err) {
+            console.error(err);
+            setError(
+                err?.response?.data?.message ||
+                "Something went wrong. Please try again later."
+            );
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
 
 
@@ -137,6 +93,8 @@ export default function ProductHome() {
         setDetailOpen(false)
     }
 
+    console.log(products, 'products')
+
     return (
         <React.Fragment>
             <Box sx={{ p: 2 }}>
@@ -144,39 +102,97 @@ export default function ProductHome() {
                 <SearchAndFilter products={products} onFiltered={setFilteredProducts} />
 
                 <Box sx={{ padding: 4 }}>
-                    <Grid container spacing={3}>
-                        {filteredProducts.map((item) => (
-                            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={item.id}>
-                                <Card
-                                    sx={{ borderRadius: 3, boxShadow: 3, cursor: 'pointer' }}
-                                    onClick={() => openDetail(item)}
-                                >
-                                    {/* <CardMedia component="img" height="180" image={item.image} alt={item.name} /> */}
-                                    <CardMedia
-                                        component="img"
-                                        height="180"
-                                        image={item.productImageUrl}
-                                        alt={item.productName}
-                                    />
-                                    <CardContent>
-                                        <Typography variant="h6" fontWeight="bold">
-                                            {item.productName}
-                                        </Typography>
+                    {loading ? (
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                minHeight: "300px",
+                            }}
+                        >
+                            <CircularProgress />
+                        </Box>
+                    ) : error ? (
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                minHeight: "300px",
+                                textAlign: "center",
+                            }}
+                        >
+                            <Typography variant="h1">
+                                😔
+                            </Typography>
 
-                                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                            {item.productDescription}
-                                        </Typography>
+                            <Typography
+                                variant="h5"
+                                sx={{ mt: 2, fontWeight: 600 }}
+                            >
+                                Oops! Unable to load products
+                            </Typography>
 
-                                        <Rating name="read-only" value={item.productRating} precision={0.5} readOnly sx={{ mt: 1 }} />
+                            <Typography
+                                variant="body1"
+                                color="text.secondary"
+                                sx={{ mt: 1 }}
+                            >
+                                {error}
+                            </Typography>
 
-                                        <Typography variant="h6" sx={{ mt: 1 }}>
-                                            ₹{item.productPrice}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
+                            <Button
+                                variant="contained"
+                                sx={{ mt: 3 }}
+                                onClick={getAllProducts}
+                            >
+                                Try Again
+                            </Button>
+                        </Box>
+                    ) : (
+                        <Grid container spacing={3}>
+                            {filteredProducts.map((item) => (
+                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={item.id}>
+                                    <Grid item xs={12} sm={6} md={3} key={item.id}>
+                                        <Card
+                                            sx={{ borderRadius: 3, boxShadow: 3, cursor: 'pointer' }}
+                                            onClick={() => openDetail(item)}
+                                        >
+                                            <CardMedia
+                                                component="img"
+                                                height="180"
+                                                image={item.productImageUrl}
+                                                alt={item.productName}
+                                            />
+
+                                            <CardContent>
+                                                <Typography variant="h6" fontWeight="bold">
+                                                    {item.productName}
+                                                </Typography>
+
+                                                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                                    {item.productDescription}
+                                                </Typography>
+
+                                                <Rating
+                                                    value={item.productRating || 0}
+                                                    precision={0.5}
+                                                    readOnly
+                                                    sx={{ mt: 1 }}
+                                                />
+
+                                                <Typography variant="h6" sx={{ mt: 1 }}>
+                                                    ₹{item.productPrice}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
                 </Box>
             </Box>
 
